@@ -36,14 +36,22 @@ def show_wishlist_ajax(request):
 @csrf_exempt
 def add_wishlist(request):
     if request.method == "POST":
-        nama = request.POST.get("nama_barang")
-        harga = request.POST.get("harga_barang")
+        nama_barang = request.POST.get("nama_barang")
+        harga_barang = request.POST.get("harga_barang")
         deskripsi = request.POST.get("deskripsi")
-        BarangWishlist.objects.create(nama_barang=nama, harga_barang=harga, deskripsi=deskripsi)
-        return HttpResponse()
-    else:
-        print("here")
-        return redirect("wishlist:show_wishlist")
+
+        new_barang = BarangWishlist(
+            nama_barang=nama_barang,
+            harga_barang=harga_barang,
+            deskripsi=deskripsi,
+        )
+        new_barang.save()
+        return HttpResponse(
+            serializers.serialize("json", [new_barang]),
+            content_type="application/json",
+        )
+
+    return HttpResponse("Invalid method", status_code=405)
 
 def show_xml(request):
     data = BarangWishlist.objects.all()
