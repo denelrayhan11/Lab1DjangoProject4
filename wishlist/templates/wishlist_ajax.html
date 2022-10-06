@@ -1,96 +1,128 @@
 {% extends 'base.html' %}
 
-{% block meta %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script>
-  function updateTable(){
-    // clear table
-    var itemCount = $(".table > tbody").children().length;
-    for(var i = itemCount; i >= 2; i--){
-      $(".table > tbody > tr:nth-child(" + i + ")").remove();
-    }
-
-    $.get("http://localhost:8000/wishlist/json/", function(data) {
-      // fill table
-      for(var i = 0; i < data.length; i++){
-        var tr = document.createElement("tr");
-        var tdNama = document.createElement("td");
-        tdNama.append(data[i].fields.nama_barang);
-        var tdHarga = document.createElement("td");
-        tdHarga.append(data[i].fields.harga_barang);
-        var tdDeskripsi = document.createElement("td");
-        tdDeskripsi.append(data[i].fields.deskripsi);
-
-        tr.append(tdNama);
-        tr.append(tdHarga);
-        tr.append(tdDeskripsi);
-
-        $(".table").append(tr);
-      }
-    });
-  }
-
-  $(document).ready(function(){
-    updateTable();
-
-    $("#add_wishlist").click(function(){
-      var nama = $("#input_nama").val();
-      var harga = $("#input_harga").val();
-      var deskripsi = $("#input_deskripsi").val();
-
-
-      $.post("http://localhost:8000/wishlist/ajax/submit/",
-      {
-        nama,
-        harga,
-        deskripsi,
-      },
-      function(data, status){
-        console.log("add wishlist success");
-        updateTable();
-        $("#input_nama").val("");
-        $("#input_harga").val("");
-        $("#input_deskripsi").val("");
-      });
-    });
-  });
-</script>
-{% endblock meta %}
-
 {% block content %}
 
+<nav class="navbar bg-dark navbar-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Halo {{ nama }}</a>
+    <a href="{% url 'wishlist:logout' %}">
+      <button type="button" class="btn btn-primary">
+        Logout
+      </button>
+    </a>
+  </div>
+</nav>
 
 
-<div class="p-4">
-  <table class="table table-bordered">
-      <tr>
-        <th>Nama Barang</th>
-        <th>Harga Barang</th>
-        <th>Deskripsi</th>
-      </tr>
+
+<div class="container mt-4">
+  <table class="table table-dark">
+    <thead class="table-secondary">
+      <th>Nama Barang</th>
+      <th>Harga Barang</th>
+      <th>Deskripsi</th>
+    </thead>
+    {% comment %} Tambahkan data di bawah baris ini {% endcomment %}
+    <tbody id="tbl">
+
+    </tbody>
   </table>
+
   <h5>Sesi terakhir login: {{ last_login }}</h5>
 
-  <h5 class="mt-4">Tambah Barang</h5>
+  <hr />
+
+  <h4>Tambah Baru</h4>
   <form method="POST" action="">
     {% csrf_token %}
     <table>
       <tr>
-          <td>Nama Barang: </td>
-          <td><input type="text" name="nama_barang" placeholder="Nama Barang" class="form-control" id="input_nama"></td>
+        <td>Nama Barang: </td>
+        <td><input type="text" id="nama_barang" name="nama_barang" placeholder="Nama Barang" class="form-control"></td>
       </tr>
+
       <tr>
-          <td>Harga Barang: </td>
-          <td><input type="text" name="harga_barang" placeholder="Harga Barang" class="form-control" id="input_harga"></td>
+        <td>Harga Barang: </td>
+        <td><input type="number" id="harga_barang" name="harga_barang" placeholder="Harga Barang" class="form-control"></td>
       </tr>
+
       <tr>
-          <td>Deskripsi: </td>
-          <td><input type="text" name="deskripsi" placeholder="Deskripsi" class="form-control" id="input_deskripsi"></td>
+        <td>Deskripsi: </td>
+        <td><textarea class="form-control" id="deskripsi" name="deskripsi"></textarea></td>
       </tr>
-      </table>
-    </form>
-    <button id="add_wishlist" type ="Submit" class="btn border rounded bg-info">Tambah</button>
+
+      <tr>
+        <td></td>
+        <td><input class="btn btn-primary" type="submit" value="Submit" id="newBtn"></td>
+      </tr>
+    </table>
+  </form>
 </div>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+  function postNew(e) {
+    e.preventDefault()
+    const namaBarang = $("#nama_barang").val()
+    const hargaBarang = $("#harga_barang").val()
+    const deskripsi = $("#deskripsi").val()
+
+    const data = {
+      nama_barang: namaBarang,
+      harga_barang: hargaBarang,
+      deskripsi,
+      csrfmiddlewaretoken: "{{ csrf_token }}"
+    }
+
+    $.ajax({
+      type: 'POST',
+      url: '{% url "wishlist:add_wishlist" %}',
+      data: data, 
+      success: () => {
+        alert("Done!")
+        fetchData()
+      },
+      // contentType: "application/json",
+      dataType: 'json'
+    });
+  }
+
+  function writeTable(data) {
+    const table = $("#tbl")
+    table.empty()
+    for (let i = 0; i < data.length; i++) {
+      table.append(`
+        <tr>
+          <td>${data[i].fields.nama_barang}</td>
+          <td>${data[i].fields.harga_barang}</td>
+          <td>${data[i].fields.deskripsi}</td>
+        </tr>
+        `)
+    }
+  }
+
+  function fetchData() {
+    $.get("/wishlist/json", writeTable)
+  }
+
+  $(document).ready(() => {
+    $("#newBtn").click(postNew)
+    fetchData()
+  })
+</script>
 {% endblock content %}
+Footer
+© 2022 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
+Status
+Docs
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
+lab1-pbp/wishlist_ajax.html at main · rorre/lab1-pbp
