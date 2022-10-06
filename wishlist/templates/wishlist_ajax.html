@@ -3,9 +3,9 @@
 {% block content %}
 <nav class="navbar bg-dark navbar-dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">Halo {{ nama }}</a>
+    <a class="navbar-brand">Halo {{ nama }}</a>
     <a href="{% url 'wishlist:logout' %}">
-      <button type="button" class="btn btn-primary">
+      <button type="button" class="btn btn-outline-primary">
         Logout
       </button>
     </a>
@@ -15,7 +15,7 @@
 
 
 <div class="container mt-4">
-  <table class="table table-dark">
+<table class="table table-dark" style="background-color: rgb(104, 198, 205);border: 5px; border-radius: 5px;">
     <thead class="table-secondary">
       <th>Nama Barang</th>
       <th>Harga Barang</th>
@@ -34,7 +34,7 @@
   <h4>Tambah Baru</h4>
   <form method="POST" action="">
     {% csrf_token %}
-    <table>
+    <table style="background-color: rgb(205, 104, 185);">
       <tr>
         <td>Nama Barang: </td>
         <td><input type="text" id="nama_barang" name="nama_barang" placeholder="Nama Barang" class="form-control"></td>
